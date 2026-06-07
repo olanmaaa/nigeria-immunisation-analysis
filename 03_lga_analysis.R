@@ -17,33 +17,7 @@ lga_coverage <- df_clean |>
   arrange(desc(mean_coverage_rate))
 
 lga_coverage
-
-# Surulere (87.1%) and Lagos Island (85.1%) are the highest performing LGAs
-# overall, both situated in densely urbanised Lagos. However, Lagos shows
-# considerable intra-state variation — several LGAs fall well below the
-# state average of 70.8%, including Badagry (60.0%), Kosofe (60.8%), and
-# Alimosho (60.3%), indicating that the state average masks significant
-# localised underperformance.
-
-# Notably, Ikeja — Lagos State capital — ranks only 5th within the state
-# at 72.0%. This may reflect the paradox of high population density in
-# administrative centres, where large numbers of eligible children make
-# achieving high coverage proportions more challenging despite strong
-# health infrastructure.
-
-# Two Kano LGAs — Fagge (67.1%) and Dala (63.8%) — appear in the top 10
-# overall, both urban LGAs within Kano city. This reinforces the urban-rural
-# finding from 02_coverage_analysis.R — even within a consistently
-# low-performing state, urban LGAs can perform comparably to mid-tier
-# Anambra LGAs, underscoring that geography and urbanicity are stronger
-# predictors of coverage than state-level factors alone.
-
-# The five lowest performing LGAs are all in Kano — Nassarawa (33.1%),
-# Ungogo (34.5%), Kumbuntsau (34.6%), Garo (41.7%), and Wudil (43.3%) —
-# all rural, representing critical zero-dose risk areas warranting
-# urgent targeted outreach.
-
-
+#visualising the findings
 lga_coverage_plot <- ggplot(lga_coverage, 
                             aes(x = mean_coverage_rate, y = reorder(lga,mean_coverage_rate), fill = state)) +
   geom_col() +
@@ -64,3 +38,27 @@ ggsave("plots/lga_coverage_plot.png",
        width = 14,
        height = 6,
        dpi = 300)
+
+# Surulere (87.1%), Lagos Island (85.1%), and Mushin (80.2%) are the only
+# LGAs across all three states to meet or exceed the 80% herd immunity
+# threshold. Their performance props up Lagos' state average, masking
+# considerable underperformance in other Lagos LGAs including Badagry (60.0%),
+# Alimosho (60.3%), and Kosofe (60.8%), all of which fall below 70%.
+
+# Notably, Ikeja — the Lagos State capital — does not meet the 80% target
+# at 72.0%, despite its concentration of health infrastructure. This may
+# reflect the challenge of achieving high coverage proportions in densely
+# populated administrative centres with large numbers of eligible children.
+
+# Kano presents the most concerning picture at the LGA level — the majority
+# of LGAs report coverage below 50%, with Nassarawa (33.1%), Ungogo (34.5%),
+# and Kumbuntsau (34.6%) representing critical underperformance. At this scale,
+# these figures translate to thousands of unvaccinated children and significant
+# zero-dose risk concentrated in rural Kano LGAs.
+
+# Anambra performs consistently across its LGAs — all ten report coverage above
+# 50%, with Awka South leading at 69.5%. However, no Anambra LGA meets the
+# 80% threshold, suggesting a state-wide systemic gap rather than localised
+# underperformance. Targeted demand-generation interventions applied uniformly
+# across Anambra LGAs may yield greater gains than selective outreach.
+
