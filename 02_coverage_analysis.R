@@ -1,23 +1,44 @@
-#1. coverage rate by state 
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(lubridate)
+library(car)
+library(rstatix)
 
-df_clean |> 
-  group_by (state)|>
-  summarise (mean_coverage_rate = mean(coverage_rate * 100))
+# ============================================
+# 1. COVERAGE RATE BY STATE
+# ============================================
+
+df_clean |>
+  group_by(state) |>
+  summarise(mean_coverage_rate = mean(coverage_rate * 100))
+
 # Lagos leads at 70.8%, followed by Anambra (58.2%) and Kano (48.3%)
 # All three states fall below the 80% herd immunity threshold
 
-#2. coverage rate by state-setting
+# ============================================
+# 2. COVERAGE RATE BY STATE AND SETTING
+# ============================================
 
-state_setting <- df_clean |> 
-  group_by (state, setting_urban_rural)|>
-  summarise (mean_coverage_rate = mean(coverage_rate * 100))
+state_setting <- df_clean |>
+  group_by(state, setting_urban_rural) |>
+  summarise(mean_coverage_rate = mean(coverage_rate * 100), .groups = "drop")
+
 state_setting
-#Urban-Lagos is the only state settong to hit the 80% coverage rate
-#Anambra and Kano perform below ideal with the Urban-Rural gap in Kano being extremely low 62.5% vs 38.9%
-#Anambra falls at about 55.5% for Rural and 65.5% for Urban
 
-#3. visualising coverage rate by state and setting
-state_setting_coverage <- ggplot(state_setting, aes(x = state, y = mean_coverage_rate, fill = setting_urban_rural)) +
+# Urban Lagos is the only state-setting combination to meet the 80% threshold
+# The urban-rural gap is most severe in Kano (62.5% urban vs 38.9% rural)
+# Anambra sits at 65.5% urban and 55.0% rural — the smallest urban-rural gap
+# of the three states, suggesting more equitable distribution despite lower
+# overall coverage
+
+# ============================================
+# 3. VISUALISING COVERAGE RATE BY STATE AND SETTING
+# ============================================
+
+state_setting_coverage <- ggplot(state_setting, 
+                                 aes(x = state, y = mean_coverage_rate, 
+                                     fill = setting_urban_rural)) +
   geom_col(position = "dodge") +
   geom_hline(yintercept = 80, linetype = "dashed", color = "red") +
   labs(title = "Mean Coverage Rate by State and Setting",
@@ -29,17 +50,21 @@ state_setting_coverage <- ggplot(state_setting, aes(x = state, y = mean_coverage
 
 state_setting_coverage
 
-ggsave("plots/state_setting_coverage.png", 
+ggsave("plots/state_setting_coverage.png",
        plot = state_setting_coverage,
-       width = 8, 
-       height = 5, 
+       width = 8,
+       height = 5,
        dpi = 300)
 
-#4. coverage by vaccine group
+# ============================================
+# 4. COVERAGE RATE BY VACCINE GROUP
+# ============================================
+
 df_clean |>
   group_by(vaccine_group) |>
   summarise(mean_coverage_rate = mean(coverage_rate * 100)) |>
   arrange(desc(mean_coverage_rate))
+
 # Coverage decreases progressively as vaccine age increases, consistent with
 # the immunisation dropout effect — a well-documented EPI challenge where
 # caregivers deprioritise later-series doses as children get older.
@@ -51,7 +76,7 @@ df_clean |>
 # low coverage in later dose groups (9-month and 15-month doses).
 
 df_clean |>
-  group_by(state,vaccine_group) |>
+  group_by(state, vaccine_group) |>
   summarise(mean_coverage_rate = mean(coverage_rate * 100), .groups = "drop") |>
   arrange(desc(mean_coverage_rate))
 
@@ -77,14 +102,17 @@ df_clean |>
 # but requires further investigation before conclusions can be drawn.
 
 vaccine_group_state <- df_clean |>
-  mutate(vaccine_group = factor(vaccine_group, levels = c("Birth Doses", "6-Week Doses", "10-Week Doses", "14-Week Doses", "9-Month Doses", "15-Month Doses")))|>
+  mutate(vaccine_group = factor(vaccine_group, levels = c(
+    "Birth Doses", "6-Week Doses", "10-Week Doses",
+    "14-Week Doses", "9-Month Doses", "15-Month Doses"))) |>
   group_by(state, vaccine_group) |>
-  summarise(mean_coverage_rate = mean(coverage_rate * 100, .groups="drop"))
+  summarise(mean_coverage_rate = mean(coverage_rate * 100), .groups = "drop")
 
 vaccine_group_state
 
-vaccine_group_trend <- ggplot(vaccine_group_state, 
-                              aes(x = vaccine_group, y = mean_coverage_rate, color = state, group = state)) +
+vaccine_group_trend <- ggplot(vaccine_group_state,
+                              aes(x = vaccine_group, y = mean_coverage_rate,
+                                  color = state, group = state)) +
   geom_line() +
   geom_point() +
   geom_hline(yintercept = 80, linetype = "dashed", color = "red") +
@@ -92,16 +120,169 @@ vaccine_group_trend <- ggplot(vaccine_group_state,
        x = "Vaccine Group",
        y = "Mean Coverage Rate (%)",
        color = "State") +
-  scale_color_manual(values = c("Kano" = "grey60", 
-                                "Lagos" = "#1A4F72", 
+  scale_color_manual(values = c("Kano" = "grey60",
+                                "Lagos" = "#1A4F72",
                                 "Anambra" = "#4A90C4")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 vaccine_group_trend
 
-ggsave("plots/vaccine_group_trend.png", 
+ggsave("plots/vaccine_group_trend.png",
        plot = vaccine_group_trend,
-       width = 8, 
-       height = 5, 
+       width = 8,
+       height = 5,
        dpi = 300)
+
+# ============================================
+# 5. COVERAGE RATE BY FACILITY TYPE
+# ============================================
+
+facility_type_state <- df_clean |>
+  group_by(state, facility_type) |>
+  summarise(mean_coverage_rate = mean(coverage_rate * 100), .groups = "drop") |>
+  arrange(desc(mean_coverage_rate))
+
+facility_type_state
+
+# Teaching hospitals report the highest coverage in Lagos (73.7%),
+# while private clinics lead in Anambra (59.1%) and outreach posts in Kano (50.1%)
+# suggesting that the most effective delivery channel varies by state context.
+
+# PHC coverage is lowest in Kano despite being the backbone of Nigeria's primary
+# healthcare system, indicating that fixed facility attendance is a barrier in
+# the North-West. The strong performance of outreach posts in Kano suggests
+# caregiver willingness to access services when brought closer to communities,
+# pointing to demand-side barriers rather than outright vaccine hesitancy.
+
+# Private clinic performance across Lagos and Anambra may reflect socioeconomic
+# selection bias — caregivers accessing private providers likely have greater
+# means and health-seeking behaviour, which should be considered when
+# interpreting these figures.
+
+# ============================================
+# ANOVA: COVERAGE RATE BY FACILITY TYPE
+# STRATIFIED BY STATE
+# ============================================
+
+# ASSUMPTION 1: INDEPENDENCE
+# Observations are stratified by state and analysed separately. Within each
+# state, LGA-level measurements are treated as independent. However, the
+# repeated monthly measurements from the same LGAs across 36 months introduce
+# potential autocorrelation — a form of non-independence that standard ANOVA
+# does not account for. A mixed effects model with LGA as a random effect
+# would be more rigorous. This limitation is acknowledged and the ANOVA
+# results should be interpreted with appropriate caution.
+
+# ASSUMPTION 2: NORMALITY
+# Q-Q plots of model residuals show approximate normality for Anambra, with
+# mild S-shaped deviation in Lagos and Kano, indicative of slight platykurtosis
+# (lighter tails than a normal distribution). Given the large sample size
+# (n = 6,840 per state), the Central Limit Theorem ensures these mild violations
+# are unlikely to meaningfully affect the validity of results. We proceed
+# with caution and note this as a limitation.
+
+anova_lagos <- aov(coverage_rate * 100 ~ facility_type,
+                   data = df_clean |> filter(state == "Lagos"))
+
+anova_anambra <- aov(coverage_rate * 100 ~ facility_type,
+                     data = df_clean |> filter(state == "Anambra"))
+
+anova_kano <- aov(coverage_rate * 100 ~ facility_type,
+                  data = df_clean |> filter(state == "Kano"))
+
+qqnorm(residuals(anova_lagos), main = "Q-Q Plot: Lagos")
+qqline(residuals(anova_lagos), col = "red")
+
+qqnorm(residuals(anova_anambra), main = "Q-Q Plot: Anambra")
+qqline(residuals(anova_anambra), col = "red")
+
+qqnorm(residuals(anova_kano), main = "Q-Q Plot: Kano")
+qqline(residuals(anova_kano), col = "red")
+
+# ASSUMPTION 3: HOMOGENEITY OF VARIANCE
+# Levene's test was significant across all three states:
+# Lagos: F(4, 6835) = 10.54, p < 0.001
+# Anambra: F(4, 6835) = 9.27, p < 0.001
+# Kano: F(4, 6835) = 11.21, p < 0.001
+# The homogeneity of variance assumption is violated in all three states.
+# Welch's ANOVA was therefore used in place of standard ANOVA, as it does
+# not assume equal variances across groups.
+
+leveneTest(coverage_rate * 100 ~ facility_type,
+           data = df_clean |> filter(state == "Lagos"))
+
+leveneTest(coverage_rate * 100 ~ facility_type,
+           data = df_clean |> filter(state == "Anambra"))
+
+leveneTest(coverage_rate * 100 ~ facility_type,
+           data = df_clean |> filter(state == "Kano"))
+
+# WELCH'S ANOVA RESULTS
+# All three states returned highly significant F-statistics:
+# Lagos: F(4, 2205.9) = 16.47, p < 0.001
+# Anambra: F(4, 2157.8) = 14.01, p < 0.001
+# Kano: F(4, 2286.7) = 8.36, p < 0.001
+# These results indicate that at least one facility type has a significantly
+# different mean coverage rate from the others within each state.
+
+oneway.test(coverage_rate * 100 ~ facility_type,
+            data = df_clean |> filter(state == "Lagos"),
+            var.equal = FALSE)
+
+oneway.test(coverage_rate * 100 ~ facility_type,
+            data = df_clean |> filter(state == "Anambra"),
+            var.equal = FALSE)
+
+oneway.test(coverage_rate * 100 ~ facility_type,
+            data = df_clean |> filter(state == "Kano"),
+            var.equal = FALSE)
+
+# POST-HOC ANALYSIS: GAMES-HOWELL TEST
+# The Games-Howell test was used for post-hoc comparisons as it does not
+# assume equal variances, consistent with Welch's ANOVA.
+
+# Lagos: Teaching Hospital and Private Clinic consistently outperform PHC,
+# General Hospital, and Outreach Post. A clear two-cluster structure emerges —
+# tertiary and private facilities outperform public primary facilities.
+# The largest significant gap is between Outreach Post and Teaching Hospital
+# (4.15 percentage points, p < 0.001).
+
+# Anambra: The pattern reverses — Teaching Hospital performs significantly
+# worse than PHC, Private Clinic, and Outreach Post. This may reflect
+# differences in the patient populations accessing tertiary care in Anambra,
+# or structural challenges specific to Teaching Hospital operations in the
+# South-East. Private Clinic and PHC perform comparably (ns).
+
+# Kano: Fewer significant pairs and smaller effect sizes than Lagos or Anambra.
+# The most notable finding is that Outreach Post significantly outperforms PHC
+# (2.76 percentage points, p < 0.001), consistent with the descriptive finding
+# that bringing services to communities is more effective than fixed facility
+# attendance in the North-West context — likely reflecting geographic barriers
+# and distance to formal health facilities.
+
+df_clean |>
+  filter(state == "Lagos") |>
+  mutate(coverage_pct = coverage_rate * 100) |>
+  games_howell_test(coverage_pct ~ facility_type)
+
+df_clean |>
+  filter(state == "Anambra") |>
+  mutate(coverage_pct = coverage_rate * 100) |>
+  games_howell_test(coverage_pct ~ facility_type)
+
+df_clean |>
+  filter(state == "Kano") |>
+  mutate(coverage_pct = coverage_rate * 100) |>
+  games_howell_test(coverage_pct ~ facility_type)
+
+# OVERALL CONCLUSION
+# No single facility type consistently outperforms others across all three states.
+# The relationship between facility type and immunisation coverage is
+# context-dependent, challenging any blanket national recommendation about
+# which facility type to prioritise. State-specific programmatic strategies
+# are warranted, with outreach intensification particularly indicated for Kano.
+# All observed differences, while statistically significant, are modest in
+# magnitude (< 5 percentage points) and should be interpreted alongside
+# programmatic significance — small percentage gaps can represent hundreds
+# of unvaccinated children at scale.
