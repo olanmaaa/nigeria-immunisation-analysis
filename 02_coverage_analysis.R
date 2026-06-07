@@ -285,4 +285,76 @@ df_clean |>
 # All observed differences, while statistically significant, are modest in
 # magnitude (< 5 percentage points) and should be interpreted alongside
 # programmatic significance — small percentage gaps can represent hundreds
-# of unvaccinated children at scale.
+
+
+#coverage by disease target
+
+disease_coverage <- df_clean |>
+  group_by (target_disease,state) |>
+  summarise(mean_coverage_rate = mean(coverage_rate * 100), .groups="drop")|>
+  arrange(desc(mean_coverage_rate))|>
+  as.data.frame()
+
+disease_coverage
+
+# No disease achieves the general 80% herd immunity threshold across any state,
+# underscoring the systemic nature of immunisation underperformance across
+# Kano, Lagos, and Anambra.
+
+# Measles/Rubella records the lowest coverage in both Anambra (46.6%) and
+# Kano (38.7%), and is among the lowest in Lagos (56.5%). This is particularly
+# alarming given the WHO measles elimination target of 95% two-dose coverage —
+# all three states fall critically short, with Kano sitting 56 percentage points
+# below the elimination threshold. Given measles' exceptionally high
+# transmissibility (R0 of 12-18), coverage at these levels leaves populations
+# highly vulnerable to outbreak. State-funded targeted measles outreach and
+# supplementary immunisation activities are urgently warranted across all
+# three states.
+
+# Rotavirus records the highest coverage in both Kano (51.6%) and Anambra
+# (62.3%), and leads in Lagos (75.7%) as well. This relative strength may
+# reflect targeted supplementary immunisation activities or prioritisation
+# of rotavirus within state EPI programmes. However, even the highest
+# performing disease-state combination falls short of the 80% threshold,
+# indicating that strong relative performance does not equate to adequate
+# absolute coverage.
+
+# Hepatitis B and Tuberculosis (birth dose antigens) perform consistently
+# across states, reflecting their position at the first health system contact
+# point. Their relatively stronger performance compared to later-schedule
+# antigens is consistent with the dropout effect documented in section 4.
+
+# Overall, disease-specific coverage remains insufficient across all three
+# states. The South-West (Lagos) consistently leads but does not meet targets
+# for later-schedule antigens. The North-West (Kano) presents the most urgent
+# disease-specific gaps, particularly for measles, meningitis A, and
+# yellow fever — all diseases with significant outbreak potential in
+# northern Nigeria.
+
+#visualisizng disease coverage
+
+disease_coverage_heatmap <- ggplot(disease_coverage, 
+                                   aes(x = state, y = target_disease, 
+                                       fill = mean_coverage_rate)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  geom_text(aes(label = round(mean_coverage_rate, 1)), 
+            color = "black", size = 3) +
+  scale_fill_gradient2(low = "red", mid = "yellow", high = "green",
+                       midpoint = 80,
+                       limits = c(30, 90),
+                       name = "Coverage (%)") +
+  labs(title = "Immunisation Coverage Rate by Target Disease and State",
+       x = "State",
+       y = "Target Disease") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 8))
+
+disease_coverage_heatmap
+
+ggsave("plots/disease_coverage_heatmap.png",
+       plot = disease_coverage_heatmap,
+       width = 10,
+       height = 6,
+       dpi = 300)
+
+disease_coverage_heatmap
