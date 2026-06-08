@@ -285,8 +285,6 @@ df_clean |>
 # All observed differences, while statistically significant, are modest in
 # magnitude (< 5 percentage points) and should be interpreted alongside
 # programmatic significance — small percentage gaps can represent hundreds
-
-
 #coverage by disease target
 
 disease_coverage <- df_clean |>
