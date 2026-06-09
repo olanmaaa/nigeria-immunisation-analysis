@@ -167,3 +167,94 @@ ggsave("plots/zero_dose_boxplot.png",
        width = 10,
        height = 6,
        dpi = 300)
+
+
+
+# ============================================
+# DROPOUT RATE ANALYSIS (PENTA1 -> PENTA3)
+# ============================================
+
+dropout_rate <- zero_dose |>
+  group_by(state) |>
+  summarise (mean_dropout_rate = mean(dropout_rate_penta1_3)* 100,
+             .groups = "drop")|>
+  arrange(desc(mean_dropout_rate))
+
+dropout_rate
+
+
+# Mean dropout rates are remarkably uniform across all three states:
+# Kano (12.1%), Lagos (12.0%), and Anambra (11.8%) — a spread of only
+# 0.3 percentage points despite dramatic differences in overall coverage
+# and zero-dose burden. This uniformity across highly heterogeneous contexts
+# suggests a demand-side behavioural pattern rather than a supply or
+# system failure — if dropout were driven by health system capacity,
+# Kano would be expected to significantly outperform Lagos.
+# This pattern is consistent with complacency dropout — where caregivers
+# perceive partial vaccination as sufficient or feel reduced urgency as
+# children grow older and appear healthy. National-level behavioural
+# interventions such as caregiver education campaigns, community health
+# worker follow-up, and SMS reminder systems are warranted rather than
+# state-specific programme fixes.
+
+# ============================================
+# MISSED VACCINATION DRIVERS
+# ============================================
+missed_drivers <- zero_dose |>
+  group_by(state) |>
+  summarise (mean_stockout_rate = mean(missed_stockout=="Yes")*100,
+             mean_access_barrier_rate = mean(missed_access_barrier == "Yes")*100,
+             .groups = "drop")
+  
+missed_drivers
+
+
+# Access barriers are the dominant missed vaccination driver across all three
+# states — Kano (17.8%), Anambra (17.5%), and Lagos (17.5%) — suggesting
+# that geographic, financial, and logistical barriers to facility access
+# are a consistent nationwide challenge regardless of state-level performance.
+
+# Stockout rates are similar across Anambra (10.3%) and Kano (10.3%),
+# while Lagos records a notably higher stockout rate (14.4%). This is
+# counterintuitive given Lagos' stronger overall performance and may reflect:
+# 1. Programme complacency: Lagos' relatively higher coverage may reduce
+#    its prioritisation for supply chain reinforcement, paradoxically
+#    increasing stockout frequency
+# 2. Population pressure: higher population density accelerates vaccine
+#    consumption, which can strain supply chains between resupply cycles
+# Further investigation would be required to confirm which mechanism dominates.
+
+# The consistency of access barrier rates across all three states — despite
+# dramatic differences in geography, urbanicity, and health system strength —
+# mirrors the uniform dropout pattern observed in section 4, further
+# supporting the case for national-level demand-side interventions alongside
+# state-specific supply chain improvements.
+
+missed_drivers_long <- missed_drivers |>
+  pivot_longer(cols = c(mean_stockout_rate, mean_access_barrier_rate),
+               names_to = "driver",
+               values_to = "rate") |>
+  mutate(driver = dplyr::recode(driver,
+                         "mean_stockout_rate" = "Stockout",
+                         "mean_access_barrier_rate" = "Access Barrier"))
+
+missed_drivers_plot <- ggplot(missed_drivers_long,
+                              aes(x = driver, y = rate, fill = state)) +
+  geom_col(position = "dodge") +
+  labs(title = "Drivers of Missed Vaccination by State",
+       x = "Driver",
+       y = "Prevalence Rate (%)",
+       fill = "State") +
+  scale_fill_manual(values = c("Kano" = "grey60",
+                               "Lagos" = "#1A4F72",
+                               "Anambra" = "#4A90C4")) +
+  theme_minimal()+
+  theme(plot.title = element_text(size=12, hjust=0.5))
+
+missed_drivers_plot
+
+ggsave("plots/missed_drivers_plot.png",
+       plot = missed_drivers_plot,
+       width = 8,
+       height = 5,
+       dpi = 300)
