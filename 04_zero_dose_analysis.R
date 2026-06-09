@@ -152,11 +152,18 @@ zero_dose_boxplot <- ggplot(zero_dose,
   labs(title = "Distribution of Zero-Dose Rates Across LGAs by State",
        x = "State",
        y = "Zero-Dose Rate (%)",
-       caption = "Kano shows high inter-LGA variability necessitating targeted LGA-level interventions\nLagos and Anambra show uniform distributions, requiring broader state-wide strategies.") +
+       caption = "Kano shows high inter-LGA variability, necessitating targeted LGA-level interventions.\nAnambra shows the most uniform distribution; Lagos shows moderate variability despite lower overall rates.") +
   scale_fill_manual(values = c("Kano" = "grey60",
                                "Lagos" = "#1A4F72",
                                "Anambra" = "#4A90C4")) +
-  theme(plot.caption = element_text(size = 1,hjust = 0))+
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.caption = element_text(size = 8, hjust = 0.5),
+        plot.title = element_text(size = 12, hjust = 0.5))
 
 zero_dose_boxplot
+
+ggsave("plots/zero_dose_boxplot.png",
+       plot = zero_dose_boxplot,
+       width = 10,
+       height = 6,
+       dpi = 300)
