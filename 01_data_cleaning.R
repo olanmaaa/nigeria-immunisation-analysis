@@ -6,9 +6,8 @@ library(janitor)
 library(tidyverse)
 
 # 1. Read the Excel file
-df <- read_excel(
-  "C:/Users/Olanma.O_SYDANI/Desktop/sample data/Nigeria_Immunisation_Dashboard_Data.xlsx"
-)
+
+df <- read_excel("data/Nigeria_Immunisation_Dashboard_Data.xlsx")
 
 # 2. Rename and mutate
 df <- df |>
