@@ -21,6 +21,7 @@ quarterly_coverage_plot <- ggplot(quarterly_coverage,
                                   aes(x = year_quarter, y = mean_coverage_rate,
                                       color = state, group = state)) +
   geom_line() +
+  geom_hline(yintercept = 80, linetype = "dashed", color = "red") +
   geom_point() +
   labs(title = "Quarterly Immunisation Coverage Trends by State (2022-2024)",
        subtitle = "All states show gradual improvement with consistent seasonal dips in Q2 and Q3",
@@ -40,3 +41,28 @@ ggsave("plots/quarterly_coverage_plot.png",
        width = 12,
        height = 6,
        dpi = 300)
+
+
+# All three states demonstrate a consistent seasonal pattern across 2022-2024 —
+# coverage peaks in Q1 and Q4 and dips in Q2 and Q3, corresponding to Nigeria's
+# rainy season (April-September). The synchronicity of this pattern across
+# geographically and programmatically distinct states suggests a shared national
+# driver rather than state-specific factors, most likely seasonal deterioration
+# in facility access, outreach penetration, and caregiver mobility.
+
+
+# Q3 2022 represents the universal lowest coverage point across all three states
+# — Kano (43.7%), Anambra (53.5%), and Lagos (66.2%). This may reflect a
+# combination of baseline programme weakness at the start of the analysis period
+# and possible post-COVID health system recovery still incomplete in mid-2022.
+# Encouragingly, Q3 coverage improves year-on-year across all states, suggesting
+# gradual system strengthening even during the most challenging seasonal period.
+
+# The plot reinforces findings from earlier analyses — Lagos consistently
+# outperforms Anambra and Kano across all quarters. Despite three years of
+# gradual improvement, Kano remains below 55% coverage in every quarter,
+# never approaching the 80% herd immunity threshold — underscoring the
+# depth of the programmatic challenge in the North-West region.
+
+
+
