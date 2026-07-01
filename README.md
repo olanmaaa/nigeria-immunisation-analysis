@@ -36,10 +36,10 @@ demonstrating public health data analysis skills.
 | Script | Description |
 |--------|-------------|
 | `01_data_cleaning.R` | Data loading, column renaming, type conversion, and validation |
-| `02_coverage_analysis.R` | Coverage summaries by state, LGA, vaccine group, and urban-rural setting |
-| `03_zero_dose_analysis.R` | Zero-dose burden, dropout rates, and missed vaccination drivers |
-| `04_trend_analysis.R` | Monthly and quarterly coverage trends across 2022-2024 |
-
+| `02_coverage_analysis.R` | Coverage summaries by state, setting, vaccine group, facility type, and target disease — includes Welch's ANOVA and Games-Howell post-hoc tests |
+| `03_lga_analysis.R` | LGA-level coverage variation and ranking within each state |
+| `04_zero_dose_analysis.R` | Zero-dose burden, dropout rates, and missed vaccination drivers by state and setting |
+| `05_trend_analysis.R` | Quarterly immunisation coverage trends across 2022-2024 |
 ---
 
 ## Tools
