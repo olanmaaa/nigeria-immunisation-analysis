@@ -287,6 +287,31 @@ df_clean |>
 # programmatic significance — small percentage gaps can represent hundreds
 #coverage by disease target
 
+facility_type_plot <- ggplot(facility_type_state,
+                             aes(x = facility_type, y = mean_coverage_rate,
+                                 fill = state)) +
+  geom_col(position = "dodge") +
+  geom_hline(yintercept = 80, linetype = "dashed", color = "red") +
+  labs(title = "Mean Immunisation Coverage Rate by Facility Type and State",
+       x = "Facility Type",
+       y = "Mean Coverage Rate (%)",
+       caption = "No facility type meets the 80% threshold in any state; differences within states are modest but statistically significant (Welch's ANOVA, p < 0.001)",
+       fill = "State") +
+  scale_fill_manual(values = c("Kano" = "grey60",
+                               "Lagos" = "#1A4F72",
+                               "Anambra" = "#4A90C4")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+facility_type_plot
+
+ggsave("plots/facility_type_plot.png",
+       plot = facility_type_plot,
+       width = 10,
+       height = 6,
+       dpi = 300)
+
+
 disease_coverage <- df_clean |>
   group_by (target_disease,state) |>
   summarise(mean_coverage_rate = mean(coverage_rate * 100), .groups="drop")|>
